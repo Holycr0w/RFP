@@ -453,3 +453,224 @@ div#tabs-bui2-tabpanel-2 .st-ar,
 .st-ar {width: 100%;}
 
 }
+
+/* Fix for invisible text and black input fields */
+
+/* Ensure all text has good contrast */
+body, p, h1, h2, h3, h4, h5, h6, span, div, input, textarea, button, select, label {
+  color: #333 !important;
+}
+
+/* Fix input fields that appear black */
+input, textarea, select, .st-dv {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E2E2E2 !important;
+  color: #333 !important;
+}
+
+/* Fix black button text */
+.stButton > button,
+button.st-emotion-cache-ag3azy.eacrzsi2,
+.st-emotion-cache-ktz07o {
+  color: #FFFFFF !important;
+  background: #9354FF !important;
+}
+
+/* Button hover states */
+.stButton > button:hover,
+button.st-emotion-cache-ag3azy.eacrzsi2:hover,
+.st-emotion-cache-ktz07o:hover {
+  color: #9354FF !important;
+  background: #FFFFFF !important;
+}
+
+/* Fix black text in drag & drop areas */
+.stFileUploader {
+  color: #333 !important;
+}
+
+/* Fix any inverted text elements */
+.st-bd, .st-be, .st-bn {
+  color: #333 !important;
+}
+
+/* Fix for any text that might be invisible due to white-on-white */
+.st-emotion-cache-vewp9z, 
+.st-emotion-cache-vewp9z h1,
+.st-emotion-cache-vewp9z h2,
+.st-emotion-cache-vewp9z h3,
+.st-emotion-cache-vewp9z h4,
+.st-emotion-cache-vewp9z h5,
+.st-emotion-cache-vewp9z h6,
+.st-emotion-cache-vewp9z p,
+.st-emotion-cache-vewp9z ol li,
+.st-emotion-cache-vewp9z ul li {
+  color: #333 !important;
+}
+
+/* Ensure form fields are visible with proper contrast */
+.st-dv input, 
+.st-dv textarea, 
+.st-dv select {
+  background-color: #F7F7F7 !important;
+  color: #333 !important;
+  border: 1px solid #E2E2E2 !important;
+}
+
+/* Fix for checkboxes and their labels */
+input[type="checkbox"],
+input[type="radio"] {
+  border: 1px solid #111 !important;
+}
+
+/* Fix for dropdown menus */
+.st-ar button {
+  color: #111 !important;
+  background-color: #f1f1f1 !important;
+}
+
+/* Fix for alerts and notification boxes */
+.stAlert .stAlertContainer {
+  background-color: #FFF !important;
+  color: #333 !important;
+  border: 1px solid #E2E2E2 !important;
+}
+
+/* Fix for any black overlays */
+.section-card,
+.sidebar-content,
+.st-emotion-cache-x2by6s .st-emotion-cache-13o7eu2.e1lln2w84[data-testid="stVerticalBlockBorderWrapper"] .stVerticalBlock {
+  background-color: #FFFFFF !important;
+  color: #333 !important;
+}
+
+/* Ensure any placeholder text is visible */
+::placeholder {
+  color: #999 !important;
+  opacity: 1 !important;
+}
+* Fix input fields that appear black */
+input, textarea, select, .st-dv {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E2E2E2 !important;
+  color: #333 !important;
+}
+
+/* Fix black button text */
+.stButton > button,
+button.st-emotion-cache-ag3azy.eacrzsi2,
+.st-emotion-cache-ktz07o,
+button.css-fblp2m,
+.stFileUploader button {
+  color: #FFFFFF !important;
+  background: #9354FF !important;
+}
+
+/* Button hover states */
+.stButton > button:hover,
+button.st-emotion-cache-ag3azy.eacrzsi2:hover,
+.st-emotion-cache-ktz07o:hover {
+  color: #9354FF !important;
+  background: #FFFFFF !important;
+}
+
+/* Fix black text in drag & drop areas */
+.stFileUploader {
+  color: #333 !important;
+}
+
+/* Fix for any inverted text elements */
+.st-bd, .st-be, .st-bn {
+  color: #333 !important;
+}
+
+/* Fix specifically for the Browse files button */
+.stFileUploader button {
+  color: #FFFFFF !important;
+  background-color: #9354FF !important;
+  border: none !important;
+}
+
+/* Fix for Export Format dropdown and other dark selectors */
+.css-1qg05tj, 
+[data-testid="stSelectbox"] > div > div,
+select,
+.st-emotion-cache-y4bq5x,
+.st-emotion-cache-1qg05tj,
+.st-emotion-cache-6qob1r {
+  background-color: #FFFFFF !important;
+  color: #333 !important;
+  border: 1px solid #E2E2E2 !important;
+}
+
+/* Fix for any text that might be invisible due to white-on-white */
+.st-emotion-cache-vewp9z, 
+.st-emotion-cache-vewp9z h1,
+.st-emotion-cache-vewp9z h2,
+.st-emotion-cache-vewp9z h3,
+.st-emotion-cache-vewp9z h4,
+.st-emotion-cache-vewp9z h5,
+.st-emotion-cache-vewp9z h6,
+.st-emotion-cache-vewp9z p,
+.st-emotion-cache-vewp9z ol li,
+.st-emotion-cache-vewp9z ul li {
+  color: #333 !important;
+}
+
+/* Ensure form fields are visible with proper contrast */
+.st-dv input, 
+.st-dv textarea, 
+.st-dv select,
+.stSelectbox > div > div {
+  background-color: #F7F7F7 !important;
+  color: #333 !important;
+  border: 1px solid #E2E2E2 !important;
+}
+
+/* Specific fix for browse button text */
+.stFileUploader button,
+.stFileUploader [data-testid="stFileUploadDropzone"] button,
+.css-1cpxqw2 {
+  color: #FFFFFF !important;
+  background-color: #9354FF !important;
+}
+
+/* Fix for the dark export format dropdown */
+[data-testid="stSelectbox"],
+div[role="listbox"] {
+  background-color: #FFFFFF !important;
+  color: #333 !important;
+}
+
+/* Fix for checkboxes and their labels */
+input[type="checkbox"],
+input[type="radio"] {
+  border: 1px solid #111 !important;
+}
+
+/* Fix for dropdown menus */
+.st-ar button {
+  color: #111 !important;
+  background-color: #f1f1f1 !important;
+}
+
+/* Fix for alerts and notification boxes */
+.stAlert .stAlertContainer {
+  background-color: #FFF !important;
+  color: #333 !important;
+  border: 1px solid #E2E2E2 !important;
+}
+
+/* Fix for any black overlays */
+.section-card,
+.sidebar-content,
+.st-emotion-cache-x2by6s .st-emotion-cache-13o7eu2.e1lln2w84[data-testid="stVerticalBlockBorderWrapper"] .stVerticalBlock {
+  background-color: #FFFFFF !important;
+  color: #333 !important;
+}
+
+/* Ensure any placeholder text is visible */
+::placeholder {
+  color: #999 !important;
+  opacity: 1 !important;
+}
