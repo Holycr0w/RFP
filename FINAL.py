@@ -2764,7 +2764,7 @@ input[type="radio"] {
 
 
     # Header
-    st.title("🚀 AI-Powered Proposal & RFP Generator")
+    st.title("Imdad RFP Analyzer & Proposal Generator")
 
     # Main workflow tabs
     tabs = st.tabs(["📋 Upload RFP", "📝 Proposal Template Creation", "📊 Generate Proposal", "📤 Export", "🔍 Advanced Analysis", "🔍 Vendor Proposal Evaluation", "📋 RFP Template Creator"])
