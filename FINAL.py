@@ -1965,39 +1965,682 @@ def main():
     # Apply custom CSS
     st.markdown("""
     <style>
-    .main {
-        background-color: #f5f7f9;
-    }
-    .stApp {
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-    h1, h2, h3 {
-        color: #003366;
-    }
-    .stButton button {
-        background-color: #003366;
-        color: white;
-    }
-    .info-box {
-        background-color: #e8f4f8;
-        padding: 15px;
-        border-radius: 5px;
-        margin-bottom: 15px;
-    }
-    .section-card {
-        background-color: white;
-        padding: 20px;
-        border-radius: 5px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        margin-bottom: 15px;
-    }
-    .sidebar-content {
-        background-color: white;
-        padding: 15px;
-        border-radius: 5px;
-        margin-bottom: 15px;
-    }
+    .st-emotion-cache-1cngmya {
+  font-family: sans-serif;
+}
+.st-ca {
+  background-color: transparent;
+}
+.custom-header {
+  margin: 0 0 10px;
+  text-align: center;
+}
+.custom-header h5 {
+  color: #636363;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0 0 30px;
+  background-color: transparent;
+  padding: 0;
+}
+
+.custom-header h5 strong {
+  color: #111;
+}
+
+.st-emotion-cache-zy6yx3 {
+  background-color: #fff !important;
+}
+.st-be {
+  background: transparent;
+  padding: 5px 10px;
+  border-radius: 25px;
+  color: #111 !important;
+}
+.st-ar button {
+  color: #111;
+  padding: 5px 10px;
+  border-radius: 25px;
+}
+.st-ar button p {
+  font-size: 16px !important;
+  font-weight: 500;
+}
+.stHorizontalBlock {
+  flex-flow: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.st-bn:hover,
+.st-bd {
+  color: #111;
+  background-color: #fff !important;
+}
+.st-bn:hover {
+  color: #111;
+}
+.st-emotion-cache-1weic72 {
+  flex-direction: row;
+  -webkit-box-align: center;
+  align-items: center;
+  justify-content: center;
+  color: #111;
+}
+.st-emotion-cache-c8ta4l {
+  color: #111;
+  margin: 0 0 10px;
+}
+.st-emotion-cache-1erivf3 {
+  flex-flow: column;
+  align-items: center;
+  padding: 0;
+  background-color: transparent;
+  border-radius: 0;
+  color: #111;
+  justify-content: center;
+  align-items: center;
+}
+.st-emotion-cache-u8hs99 {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  flex-wrap: wrap;
+  flex-flow: column;
+  text-align: center;
+}
+
+.stFileUploader {
+  display: flex;
+  flex-flow: column;
+  min-width: 455px;
+  max-width: 100%;
+  height: auto;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px dashed #b1b1b1 !important;
+  background: linear-gradient(
+      180deg,
+      rgba(147, 84, 255, 0) 0%,
+      rgba(147, 84, 255, 0.15) 100%
+    ),
+    #fff !important;
+  box-shadow: -44px 139px 41px 0px rgba(0, 0, 0, 0),
+    -28px 89px 37px 0px rgba(0, 0, 0, 0),
+    -16px 50px 31px 0px rgba(0, 0, 0, 0.02),
+    -7px 22px 23px 0px rgba(0, 0, 0, 0.03),
+    -2px 6px 13px 0px rgba(0, 0, 0, 0.03) !important;
+}
+.stButton > button,
+.st-emotion-cache-ktz07o {
+  color: #fff;
+  border-radius: 12px;
+  background: #9354ff;
+  border: 1px solid #9354ff;
+  box-shadow: 0px 4px 7.3px 0px rgba(0, 0, 0, 0.15),
+    0px -3.2px 12.1px 0px rgba(0, 0, 0, 0.15) inset,
+    0px 5.2px 13px 0px rgba(255, 255, 255, 0.39) inset;
+}
+.st-emotion-cache-ktz07o:active,
+.st-emotion-cache-ktz07o:focus:not(:active),
+.st-emotion-cache-ktz07o:hover {
+  background: transparent;
+  color: #9354ff;
+  border: 1px solid #9354ff;
+}
+.st-emotion-cache-8atqhb {
+  display: flex;
+  justify-content: center;
+}
+.st-emotion-cache-1l4firl {
+  color: #111;
+}
+/* .stAlert .stAlertContainer {
+  border-radius: 20px;
+  border: 1px solid #e2e2e2;
+  background: #fff;
+  box-shadow: -32px 30px 12px 0px rgba(0, 0, 0, 0),
+    -21px 19px 11px 0px rgba(0, 0, 0, 0),
+    -12px 11px 10px 0px rgba(0, 0, 0, 0.02),
+    -5px 5px 7px 0px rgba(0, 0, 0, 0.03), -1px 1px 4px 0px rgba(0, 0, 0, 0.03);
+  color: #111;
+} */
+.stTextArea st-de {
+  border: 0;
+  color: #111;
+  border-radius: 8px;
+  background: #f7f7f7;
+}
+.st-emotion-cache-qoz3f2.erovr380 {
+  color: #000;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: normal;
+}
+.st-emotion-cache-x2by6s {
+  width: calc(60% - 1rem);
+  flex: 1 1 calc(60% - 1rem);
+}
+.st-emotion-cache-seewz2,
+.st-emotion-cache-seewz2 li {
+  color: #111 !important;
+}
+.stButton.st-emotion-cache-8atqhb.e1mlolmg0 {
+  background-color: transparent;
+  padding: 0;
+  box-shadow: none;
+  margin: 0;
+}
+body,
+.stApp {
+  background: #fff;
+}
+.st-dz,
+.st-emotion-cache-pro1il,
+.st-emotion-cache-vewp9z,
+.st-emotion-cache-vewp9z h1, .st-emotion-cache-vewp9z h2, .st-emotion-cache-vewp9z h3, .st-emotion-cache-vewp9z h4, .st-emotion-cache-vewp9z h5, .st-emotion-cache-vewp9z h6,
+.st-emotion-cache-vewp9z p,
+p,
+body,
+.stApp {
+  font-family: sans-serif!important;
+}
+
+.st-emotion-cache-vewp9z.erovr380 ol {
+  display: inline-block;
+  font-family: sans-serif;
+}
+.st-dv {
+  background: #F7F7F7;
+}
+
+.stApp header {
+  background-color: #fff;
+}
+.stApp header,
+.stApp h1,
+.stApp h2,
+.stApp h3 {
+  font-weight: 700;
+  color: #18181b;
+}
+
+/* Component styles */
+.st-emotion-cache-8atqhb {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.st-ae > div {
+  text-align: center;
+}
+
+.stMarkdown[data-testid="stMarkdown"] {
+  background-color: #fff;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  margin-bottom: 0;
+}
+
+.st-ar {
+  justify-content: center;
+  color: #111;
+  border-radius: 140px;
+  background: #f1f1f1;
+  display: inline-flex;
+  padding: 5px;
+  align-items: center;
+  margin: 0 auto;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.st-ar .st-c2 {
+  display: none !important;
+}
+
+.st-bd {
+  color: #111 !important;
+}
+
+.stHeading {
+  text-align: center;
+}
+
+/* Input component styles */
+.stFileUploader,
+.stButton,
+.stTextInput,
+.stMarkdown,
+.stDataFrame,
+.stSelectbox,
+.stTextArea {
+  border-radius: 18px !important;
+  box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.04);
+  background: #fff;
+  padding: 1.5rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+
+.stButton > button ,
+button.st-emotion-cache-ag3azy.eacrzsi2 {
+  border-radius: 12px;
+  background: #9354FF;
+  box-shadow: 0px 4px 7.3px 0px rgba(0, 0, 0, 0.15), 0px -3.2px 12.1px 0px rgba(0, 0, 0, 0.15) inset, 0px 5.2px 13px 0px rgba(255, 255, 255, 0.39) inset;
+  color: #fff;
+}
+.stButton > button:hover,
+button.st-emotion-cache-ag3azy.eacrzsi2:hover {
+  background: transparent;
+  color: #9354FF;
+  border: 1px solid #9354FF;
+}
+
+.custom-header {
+  margin: 0 0 10px;
+  text-align: center;
+}
+
+.custom-header h5 {
+  color: #636363;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0 0 30px;
+  background-color: transparent;
+  padding: 0;
+}
+
+.custom-header h5 strong {
+  color: #111;
+}
+
+.info-box {
+  background-color: #fff;
+  padding: 0;
+  border-radius: 0;
+  margin-bottom: 0;
+  box-shadow: none;
+}
+.st-emotion-cache-seewz2 li {
+  color: #111 !important;
+}
+
+.section-card {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 15px;
+}
+
+
+.sidebar-content {
+  background-color: white;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+}
+.st-emotion-cache-bvonac {
+  padding: 0;
+  background-color: transparent;
+  border-radius: 0.5rem;
+  color: rgb(24, 24, 27);
+  flex-flow: column;
+}
+.st-emotion-cache-2ti0tp {
+  margin: 0 0 1rem;
+}
+.st-emotion-cache-fis6aj {
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  width: 100%;
+}
+.st-emotion-cache-1nb7gun {
+  justify-content: center;
+  margin: 0 0 1rem;
+}
+.st-emotion-cache-j78z8c {
+  justify-content: center;
+}
+.st-emotion-cache-x2by6s .st-emotion-cache-13o7eu2.e1lln2w84[data-testid="stVerticalBlockBorderWrapper"] .stVerticalBlock.st-emotion-cache-vlxhtx.e1lln2w83[data-testid="stVerticalBlock"] {
+  border-radius: 20px;
+  border: 1px solid #E2E2E2;
+  background: #FFF;
+  box-shadow: -32px 30px 12px 0px rgba(0, 0, 0, 0.00), -21px 19px 11px 0px rgba(0, 0, 0, 0.00), -12px 11px 10px 0px rgba(0, 0, 0, 0.02), -5px 5px 7px 0px rgba(0, 0, 0, 0.03), -1px 1px 4px 0px rgba(0, 0, 0, 0.03);
+  text-align: left;
+  padding: 1rem 2rem;
+}
+.st-emotion-cache-vewp9z h1 {
+  font-size: 2rem;
+}
+
+.st-emotion-cache-vewp9z h2 {
+  font-size: 1.6rem;
+}
+s
+.t-emotion-cache-1mwoiw6 {
+  width: calc(60% - 1rem);
+  flex: 1 1 calc(60% - 1rem);
+  border-radius: 20px;
+  border: 1px solid #E2E2E2;
+  background: #FFF;
+  box-shadow: -32px 30px 12px 0px rgba(0, 0, 0, 0.00), -21px 19px 11px 0px rgba(0, 0, 0, 0.00), -12px 11px 10px 0px rgba(0, 0, 0, 0.02), -5px 5px 7px 0px rgba(0, 0, 0, 0.03), -1px 1px 4px 0px rgba(0, 0, 0, 0.03);
+  text-align: left;
+  padding: 1rem 2rem;
+}
+/* .st-emotion-cache-17lr0tt .stMarkdown[data-testid="stMarkdown"]{
+  border-radius: 20px;
+  border: 1px solid #E2E2E2;
+  background: #FFF;
+  box-shadow: -32px 30px 12px 0px rgba(0, 0, 0, 0.00), -21px 19px 11px 0px rgba(0, 0, 0, 0.00), -12px 11px 10px 0px rgba(0, 0, 0, 0.02), -5px 5px 7px 0px rgba(0, 0, 0, 0.03), -1px 1px 4px 0px rgba(0, 0, 0, 0.03);
+  padding: 2rem;
+  text-align: left;
+} */
+.st-cb[aria-labelledby="tabs-bui3-tab-9"] ,
+div#tabs-bui3-tabpanel-9 {
+  width: calc(60% - 1rem);
+  flex: 1 1 calc(60% - 1rem);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+  text-align: left;
+}
+.st-cb[aria-labelledby="tabs-bui3-tab-0"] ,
+div#tabs-bui3-tabpanel-0 {
+  text-align: left;
+}
+
+div#tabs-bui2-tabpanel-5 .st-emotion-cache-13o7eu2.e1lln2w84,
+div#tabs-bui2-tabpanel-4 .st-emotion-cache-vewp9z.erovr380,
+div#tabs-bui2-tabpanel-2 .st-ae [data-baseweb="tab-panel"] .st-emotion-cache-13o7eu2.e1lln2w84 .stMarkdown[data-testid="stMarkdown"] .st-emotion-cache-vewp9z.erovr380 {
+  width: calc(60% - 1rem);
+  text-align: left;
+  align-items: center;
+  margin: auto;
+}
+.st-emotion-cache-1mwoiw6 {
+  width: calc(33.3333% - 1rem);
+  flex: 1 1 calc(33.3333% - 1rem);
+  width: calc(40% - 1rem);
+  flex: 1 1 calc(40% - 1rem);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+  text-align: left;
+  border: 1px solid #E2E2E2;
+  background: #FFF;
+  box-shadow: -32px 30px 12px 0px rgba(0, 0, 0, 0.00), -21px 19px 11px 0px rgba(0, 0, 0, 0.00), -12px 11px 10px 0px rgba(0, 0, 0, 0.02), -5px 5px 7px 0px rgba(0, 0, 0, 0.03), -1px 1px 4px 0px rgba(0, 0, 0, 0.03);
+  text-align: left;
+  padding: 1rem 2rem;
+  border-radius: 15px;
+}
+div#tabs-bui2-tabpanel-2 .st-ar {
+  padding: 15px 1rem;
+  max-width: 75%;
+}
+@media (max-width: 768px) {
+  .st-emotion-cache-1mwoiw6 ,
+  div#tabs-bui2-tabpanel-5 .st-emotion-cache-13o7eu2.e1lln2w84,
+  div#tabs-bui2-tabpanel-4 .st-emotion-cache-vewp9z.erovr380,
+  div#tabs-bui2-tabpanel-2 .st-ae [data-baseweb="tab-panel"] .st-emotion-cache-13o7eu2.e1lln2w84 .stMarkdown[data-testid="stMarkdown"] .st-emotion-cache-vewp9z.erovr380 ,
+  .st-cb[aria-labelledby="tabs-bui3-tab-9"] , s
+  .st-cb[aria-labelledby="tabs-bui3-tab-0"] 
+  .st-emotion-cache-x2by6s ,
+  .st-emotion-cache-1mwoiw6,
+  div#tabs-bui3-tabpanel-9  {
+    width: 100%;
+  flex: 1 1 100%;
+  }
+  .st-emotion-cache-vewp9z h1 {
+    font-size: 1.5rem
+}
+.st-ar {border-radius: 10px;}
+.st-emotion-cache-vewp9z h2 {
+  font-size: 1.2rem
+}
+div#tabs-bui2-tabpanel-2 .st-ar,
+.stFileUploader {
+  min-width: 100%;
+  max-width: 100%;
+}
+.st-emotion-cache-nvtlpw .e16xj5sw0 {
+  align-items: center;
+}
+.st-ar {width: 100%;}
+
+}
+
+/* Fix for invisible text and black input fields */
+
+/* Ensure all text has good contrast */
+body, p, h1, h2, h3, h4, h5, h6, span, div, input, textarea, button, select, label {
+  color: #333 !important;
+}
+
+/* Fix input fields that appear black */
+input, textarea, select, .st-dv {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E2E2E2 !important;
+  color: #333 !important;
+}
+
+/* Fix black button text */
+.stButton > button,
+button.st-emotion-cache-ag3azy.eacrzsi2,
+.st-emotion-cache-ktz07o {
+  color: #FFFFFF !important;
+  background: #9354FF !important;
+}
+
+/* Button hover states */
+.stButton > button:hover,
+button.st-emotion-cache-ag3azy.eacrzsi2:hover,
+.st-emotion-cache-ktz07o:hover {
+  color: #9354FF !important;
+  background: #FFFFFF !important;
+}
+
+/* Fix black text in drag & drop areas */
+.stFileUploader {
+  color: #333 !important;
+}
+
+/* Fix any inverted text elements */
+.st-bd, .st-be, .st-bn {
+  color: #333 !important;
+}
+
+/* Fix for any text that might be invisible due to white-on-white */
+.st-emotion-cache-vewp9z, 
+.st-emotion-cache-vewp9z h1,
+.st-emotion-cache-vewp9z h2,
+.st-emotion-cache-vewp9z h3,
+.st-emotion-cache-vewp9z h4,
+.st-emotion-cache-vewp9z h5,
+.st-emotion-cache-vewp9z h6,
+.st-emotion-cache-vewp9z p,
+.st-emotion-cache-vewp9z ol li,
+.st-emotion-cache-vewp9z ul li {
+  color: #333 !important;
+}
+
+/* Ensure form fields are visible with proper contrast */
+.st-dv input, 
+.st-dv textarea, 
+.st-dv select {
+  background-color: #F7F7F7 !important;
+  color: #333 !important;
+  border: 1px solid #E2E2E2 !important;
+}
+
+/* Fix for checkboxes and their labels */
+input[type="checkbox"],
+input[type="radio"] {
+  border: 1px solid #111 !important;
+}
+
+/* Fix for dropdown menus */
+.st-ar button {
+  color: #111 !important;
+  background-color: #f1f1f1 !important;
+}
+
+/* Fix for alerts and notification boxes */
+.stAlert .stAlertContainer {
+  background-color: #FFF !important;
+  color: #333 !important;
+  border: 1px solid #E2E2E2 !important;
+}
+
+/* Fix for any black overlays */
+.section-card,
+.sidebar-content,
+.st-emotion-cache-x2by6s .st-emotion-cache-13o7eu2.e1lln2w84[data-testid="stVerticalBlockBorderWrapper"] .stVerticalBlock {
+  background-color: #FFFFFF !important;
+  color: #333 !important;
+}
+
+/* Ensure any placeholder text is visible */
+::placeholder {
+  color: #999 !important;
+  opacity: 1 !important;
+}
+* Fix input fields that appear black */
+input, textarea, select, .st-dv {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E2E2E2 !important;
+  color: #333 !important;
+}
+
+/* Fix black button text */
+.stButton > button,
+button.st-emotion-cache-ag3azy.eacrzsi2,
+.st-emotion-cache-ktz07o,
+button.css-fblp2m,
+.stFileUploader button {
+  color: #FFFFFF !important;
+  background: #9354FF !important;
+}
+
+/* Button hover states */
+.stButton > button:hover,
+button.st-emotion-cache-ag3azy.eacrzsi2:hover,
+.st-emotion-cache-ktz07o:hover {
+  color: #9354FF !important;
+  background: #FFFFFF !important;
+}
+
+/* Fix black text in drag & drop areas */
+.stFileUploader {
+  color: #333 !important;
+}
+
+/* Fix for any inverted text elements */
+.st-bd, .st-be, .st-bn {
+  color: #333 !important;
+}
+
+/* Fix specifically for the Browse files button */
+.stFileUploader button {
+  color: #FFFFFF !important;
+  background-color: #9354FF !important;
+  border: none !important;
+}
+
+/* Fix for Export Format dropdown and other dark selectors */
+.css-1qg05tj, 
+[data-testid="stSelectbox"] > div > div,
+select,
+.st-emotion-cache-y4bq5x,
+.st-emotion-cache-1qg05tj,
+.st-emotion-cache-6qob1r {
+  background-color: #FFFFFF !important;
+  color: #333 !important;
+  border: 1px solid #E2E2E2 !important;
+}
+
+/* Fix for any text that might be invisible due to white-on-white */
+.st-emotion-cache-vewp9z, 
+.st-emotion-cache-vewp9z h1,
+.st-emotion-cache-vewp9z h2,
+.st-emotion-cache-vewp9z h3,
+.st-emotion-cache-vewp9z h4,
+.st-emotion-cache-vewp9z h5,
+.st-emotion-cache-vewp9z h6,
+.st-emotion-cache-vewp9z p,
+.st-emotion-cache-vewp9z ol li,
+.st-emotion-cache-vewp9z ul li {
+  color: #333 !important;
+}
+
+/* Ensure form fields are visible with proper contrast */
+.st-dv input, 
+.st-dv textarea, 
+.st-dv select,
+.stSelectbox > div > div {
+  background-color: #F7F7F7 !important;
+  color: #333 !important;
+  border: 1px solid #E2E2E2 !important;
+}
+
+/* Specific fix for browse button text */
+.stFileUploader button,
+.stFileUploader [data-testid="stFileUploadDropzone"] button,
+.css-1cpxqw2 {
+  color: #FFFFFF !important;
+  background-color: #9354FF !important;
+}
+
+/* Fix for the dark export format dropdown */
+[data-testid="stSelectbox"],
+div[role="listbox"] {
+  background-color: #FFFFFF !important;
+  color: #333 !important;
+}
+
+/* Fix for checkboxes and their labels */
+input[type="checkbox"],
+input[type="radio"] {
+  border: 1px solid #111 !important;
+}
+
+/* Fix for dropdown menus */
+.st-ar button {
+  color: #111 !important;
+  background-color: #f1f1f1 !important;
+}
+
+/* Fix for alerts and notification boxes */
+.stAlert .stAlertContainer {
+  background-color: #FFF !important;
+  color: #333 !important;
+  border: 1px solid #E2E2E2 !important;
+}
+
+/* Fix for any black overlays */
+.section-card,
+.sidebar-content,
+.st-emotion-cache-x2by6s .st-emotion-cache-13o7eu2.e1lln2w84[data-testid="stVerticalBlockBorderWrapper"] .stVerticalBlock {
+  background-color: #FFFFFF !important;
+  color: #333 !important;
+}
+
+/* Ensure any placeholder text is visible */
+::placeholder {
+  color: #999 !important;
+  opacity: 1 !important;
+}
     </style>
     """, unsafe_allow_html=True)
 
