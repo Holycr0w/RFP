@@ -2671,8 +2671,8 @@ input[type="radio"] {
     if 'knowledge_base' not in st.session_state:
         try:
             kb_dir = st.session_state.config["knowledge_base"]["directory"]
-            embedding_model = st.session_state.config["knowledge_base"]["embedding_model"]
-            st.session_state.knowledge_base = ProposalKnowledgeBase(kb_dir, embedding_model)
+            embedding_model_name = st.session_state.config["knowledge_base"]["embedding_model"]
+            st.session_state.knowledge_base = ProposalKnowledgeBase(kb_dir, embedding_model_name)
         except Exception as e:
             st.error(f"Failed to initialize knowledge base: {str(e)}")
             st.session_state.knowledge_base = None
@@ -2682,34 +2682,32 @@ input[type="radio"] {
         if not openai_key:
             openai_key = os.environ.get("OPENAI_API_KEY", "")
 
-        if openai_key:
+        if openai_key and st.session_state.knowledge_base: # Also check if KB initialized successfully
             st.session_state.generator = EnhancedProposalGenerator(st.session_state.knowledge_base, openai_key)
-        else:
+        elif not openai_key:
             st.error("OpenAI API key is not configured. Please add it to config.json or set the OPENAI_API_KEY environment variable.")
+            st.session_state.generator = None
+        else: # KB failed to initialize
+            st.error("Proposal Generator could not be initialized due to Knowledge Base error.")
             st.session_state.generator = None
 
 
     if 'rfp_text' not in st.session_state:
         st.session_state.rfp_text = ""
-
     if 'rfp_analysis' not in st.session_state:
         st.session_state.rfp_analysis = None
-
     if 'proposal_data' not in st.session_state:
         st.session_state.proposal_data = {
             "sections": {},
             "required_sections": [],
             "client_background": None,
             "differentiators": None,
-            "client_name": "Client Organization" # Initialize client_name
+            "client_name": "Client Organization"
         }
-
     if 'client_background' not in st.session_state:
         st.session_state.client_background = None
-
     if 'differentiators' not in st.session_state:
         st.session_state.differentiators = None
-
     if 'advanced_analysis' not in st.session_state:
         st.session_state.advanced_analysis = {
             "compliance_matrix": None,
@@ -2717,88 +2715,97 @@ input[type="radio"] {
             "alignment_assessment": None,
             "compliance_assessment": None
         }
-
     if 'template_created' not in st.session_state:
         st.session_state.template_created = False
-
     if 'template_sections' not in st.session_state:
         st.session_state.template_sections = []
-
     if 'rfp_response_analysis' not in st.session_state:
         st.session_state.rfp_response_analysis = None
-
     if 'vendor_analysis' not in st.session_state:
         st.session_state.vendor_analysis = None
-
     if 'vendor_score_results' not in st.session_state:
         st.session_state.vendor_score_results = None
-
     if 'vendor_gaps_risks' not in st.session_state:
         st.session_state.vendor_gaps_risks = None
-
     if 'vendor_proposals' not in st.session_state:
         st.session_state.vendor_proposals = []
-
     if 'rfp_templates' not in st.session_state:
         st.session_state.rfp_templates = []
-
     if 'rfp_template_content' not in st.session_state:
         st.session_state.rfp_template_content = None
 
-    # Initialize session state for dynamic weights if not already present
-    # Use the default weights from the loaded config
-    # Ensure scoring_system and weighting keys exist before accessing
     if 'dynamic_weights' not in st.session_state or not st.session_state.dynamic_weights:
-         # Use a copy to avoid modifying the original config in session state directly
-         st.session_state.dynamic_weights = st.session_state.config.get('scoring_system', {}).get('weighting', {}).copy()
-         if not st.session_state.dynamic_weights:
-              # Fallback if weighting is also missing
-              st.session_state.dynamic_weights = {
-                 "requirement_match": 0.4,
-                 "compliance": 0.25,
-                 "quality": 0.2,
-                 "alignment": 0.15,
-                 "risk": 0.1
-              }
-              st.warning("Scoring system weights not found in config. Using default weights.")
+        st.session_state.dynamic_weights = st.session_state.config.get('scoring_system', {}).get('weighting', {}).copy()
+        if not st.session_state.dynamic_weights:
+            st.session_state.dynamic_weights = {
+                "requirement_match": 0.4, "compliance": 0.25, "quality": 0.2,
+                "alignment": 0.15, "risk": 0.1
+            }
+            st.warning("Scoring system weights not found in config. Using default weights.")
 
 
-    # Header
-    st.title("Imdad RFP Analyzer & Proposal Generator")
+    # --- MODIFIED HEADER SECTION ---
+    with st.container():
+        col_title_1, col_title_2 = st.columns([1, 6]) # Adjust ratio as needed e.g. [1,5] or [1,7]
+        
+        logo_path_from_config = st.session_state.config.get("company_info", {}).get("logo_path", "")
+
+        with col_title_1:
+            if logo_path_from_config and os.path.exists(logo_path_from_config):
+                try:
+                    st.image(logo_path_from_config, width=400)  # Adjust width as desired
+                except Exception as e:
+                    # Optionally show a placeholder or a small error message if logo fails to load
+                    # st.caption("Logo error")
+                    pass # Fail silently if logo can't be displayed
+            else:
+                st.empty() # Keep the column for alignment even if no logo
+
+        with col_title_2:
+            st.title("Imdad RFP Analyzer & Proposal Generator")
+        
+        if logo_path_from_config and not os.path.exists(logo_path_from_config):
+             st.caption(f"Note: Logo path specified in config ('{logo_path_from_config}') but file not found.")
+    # --- END MODIFIED HEADER SECTION ---
+
 
     # Main workflow tabs
-    tabs = st.tabs(["📋 Upload RFP", "📝 Proposal Template Creation", "📊 Generate Proposal", "📤 Export", "🔍 Advanced Analysis", "🔍 Vendor Proposal Evaluation", "📋 RFP Template Creator"])
+    tabs = st.tabs([" Upload RFP", " Proposal Template Creation", " Generate Proposal", " Export", " Advanced Analysis", " Vendor Proposal Evaluation", " RFP Template Creator"])
 
     # Tab 1: Upload RFP
     with tabs[0]:
         st.header("Upload and Analyze RFP")
 
-        col1, col2 = st.columns([3, 2])
+        col1_tab, col2_tab = st.columns([3, 2])
 
-        with col1:
+        with col1_tab:
             uploaded_file = st.file_uploader("Upload RFP Document", type=["docx", "pdf", "txt", "md"])
 
             if uploaded_file is not None:
-                temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=f".{uploaded_file.name.split('.')[-1]}")
-                temp_file.write(uploaded_file.getvalue())
-                temp_file.close()
-
+                temp_file_path = ""
                 try:
-                    rfp_text = process_rfp(temp_file.name)
-                    st.session_state.rfp_text = rfp_text
+                    file_extension = os.path.splitext(uploaded_file.name)[1]
+                    if not file_extension:
+                         file_extension = ".tmp" # Fallback if no extension
+                    
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_file_obj:
+                        temp_file_obj.write(uploaded_file.getvalue())
+                        temp_file_path = temp_file_obj.name
+                    
+                    rfp_text = process_rfp(temp_file_path)
+                    st.session_state.rfp_text = rfp_text # Already cleaned by process_rfp
                     st.success(f"Successfully processed {uploaded_file.name}")
 
                     with st.expander("Preview RFP Content", expanded=False):
-                        # Display cleaned text in the preview
-                        st.text_area("RFP Text", remove_problematic_chars(rfp_text), height=300, key="rfp_preview")
+                        st.text_area("RFP Text", rfp_text, height=300, key="rfp_preview") # Display the already cleaned text
 
                 except Exception as e:
                     st.error(f"Error processing file: {str(e)}")
                 finally:
-                    if os.path.exists(temp_file.name):
-                        os.unlink(temp_file.name)
+                    if temp_file_path and os.path.exists(temp_file_path):
+                        os.unlink(temp_file_path)
 
-        with col2:
+        with col2_tab:
             st.markdown('<div class="info-box">', unsafe_allow_html=True)
             st.markdown("### 📝 Instructions")
             st.markdown("""
@@ -2810,137 +2817,114 @@ input[type="radio"] {
             st.markdown('</div>', unsafe_allow_html=True)
 
             if st.session_state.rfp_text:
-                if st.button("Analyze RFP", type="primary"):
-                    with st.spinner("Analyzing RFP..."):
-                        if st.session_state.generator:
-                            # Pass cleaned RFP text to analyze_rfp
-                            rfp_analysis = st.session_state.generator.analyze_rfp(remove_problematic_chars(st.session_state.rfp_text))
-                            st.session_state.rfp_analysis = rfp_analysis # Store cleaned analysis
+                if st.button("Analyze RFP", type="primary", key="analyze_rfp_btn_tab1"):
+                    if not st.session_state.generator:
+                        st.error("Generator not initialized. Please check API key and Knowledge Base.")
+                    else:
+                        with st.spinner("Analyzing RFP..."):
+                            # rfp_text is already cleaned and stored in session_state
+                            rfp_analysis_result = st.session_state.generator.analyze_rfp(st.session_state.rfp_text)
+                            st.session_state.rfp_analysis = rfp_analysis_result # result is cleaned by analyze_rfp
 
-                            # Extract required sections (uses cleaned analysis internally)
-                            required_sections = st.session_state.generator.extract_required_sections(rfp_analysis)
-                            st.session_state.required_sections = required_sections
-
-                            # Extract mandatory criteria (uses cleaned analysis internally)
-                            mandatory_criteria = st.session_state.generator.extract_mandatory_criteria(rfp_analysis)
-                            st.session_state.mandatory_criteria = mandatory_criteria
-
-                            # Extract deadlines (uses cleaned analysis internally)
-                            deadlines = st.session_state.generator.extract_deadlines(rfp_analysis)
-                            st.session_state.deadlines = deadlines
-
-                            # Extract deliverables (uses cleaned analysis internally)
-                            deliverables = st.session_state.generator.extract_deliverables(rfp_analysis)
-                            st.session_state.deliverables = deliverables
-
-                            # Assess compliance (uses cleaned analysis internally)
+                            # Subsequent extractions use the cleaned rfp_analysis_result
+                            st.session_state.required_sections = st.session_state.generator.extract_required_sections(rfp_analysis_result)
+                            st.session_state.mandatory_criteria = st.session_state.generator.extract_mandatory_criteria(rfp_analysis_result)
+                            st.session_state.deadlines = st.session_state.generator.extract_deadlines(rfp_analysis_result)
+                            st.session_state.deliverables = st.session_state.generator.extract_deliverables(rfp_analysis_result)
+                            
                             internal_capabilities = st.session_state.config.get("internal_capabilities", {})
-                            compliance_assessment = st.session_state.generator.assess_compliance(rfp_analysis, internal_capabilities)
-                            st.session_state.compliance_assessment = compliance_assessment
+                            # assess_compliance will clean its inputs
+                            st.session_state.compliance_assessment = st.session_state.generator.assess_compliance(rfp_analysis_result, internal_capabilities)
 
                             st.success("RFP Analysis Complete")
                             st.markdown("### Key Insights")
                             st.markdown("#### Mandatory Criteria")
                             if st.session_state.mandatory_criteria:
-                                # Display cleaned mandatory criteria
-                                st.markdown("\n".join([f"- {remove_problematic_chars(item)}" for item in st.session_state.mandatory_criteria]))
+                                # Display already cleaned criteria
+                                st.markdown("\n".join([f"- {item}" for item in st.session_state.mandatory_criteria]))
                             else:
                                 st.markdown("No mandatory criteria found.")
 
                             st.markdown("#### Deadlines")
                             if st.session_state.deadlines:
-                                # Display cleaned deadlines
-                                st.markdown("\n".join([f"- {remove_problematic_chars(item)}" for item in st.session_state.deadlines]))
+                                st.markdown("\n".join([f"- {item}" for item in st.session_state.deadlines]))
                             else:
                                 st.markdown("No deadlines found.")
 
                             st.markdown("#### Deliverables")
                             if st.session_state.deliverables:
-                                # Display cleaned deliverables
-                                st.markdown("\n".join([f"- {remove_problematic_chars(item)}" for item in st.session_state.deliverables]))
+                                st.markdown("\n".join([f"- {item}" for item in st.session_state.deliverables]))
                             else:
                                 st.markdown("No deliverables found.")
 
                             st.markdown("#### Compliance Assessment")
-                            # Display cleaned compliance assessment
-                            st.markdown(remove_problematic_chars(st.session_state.compliance_assessment))
+                            # Display already cleaned assessment
+                            st.markdown(st.session_state.compliance_assessment)
 
                             st.markdown("#### Full RFP Analysis")
-                            # Display cleaned full analysis
-                            st.write(remove_problematic_chars(rfp_analysis))
-                        else:
-                            st.error("OpenAI API key is not configured")
+                            # Display already cleaned analysis
+                            st.write(rfp_analysis_result)
 
-    # Tab 2: Template Creation
+
+    # Tab 2: Proposal Template Creation
     with tabs[1]:
         st.header("Create Proposal Template")
 
         if not st.session_state.rfp_analysis:
             st.warning("Please upload and analyze an RFP first.")
         else:
-            col1, col2 = st.columns([2, 1])
+            col1_tab2, col2_tab2 = st.columns([2, 1])
 
-            with col1:
+            with col1_tab2:
                 st.markdown("### Define Template Sections")
                 st.markdown("Select sections from the suggestions below or add your own.")
 
                 st.markdown("#### Sections from Current RFP Analysis")
                 if hasattr(st.session_state, 'required_sections') and st.session_state.required_sections:
                     with st.expander("Select sections identified in this RFP", expanded=True):
-                        for section in st.session_state.required_sections:
-                            # Ensure section name is cleaned for display and key
-                            cleaned_section = remove_problematic_chars(section)
-                            already_added = cleaned_section in st.session_state.template_sections
-                            # Use a consistent key structure with cleaned name
-                            is_selected = st.checkbox(cleaned_section, value=already_added, key=f"rfp_section_select_{cleaned_section}")
-                            if is_selected and cleaned_section not in st.session_state.template_sections:
-                                st.session_state.template_sections.append(cleaned_section)
-                                # st.rerun() # Rerun to update the list visually
-                            elif not is_selected and cleaned_section in st.session_state.template_sections:
-                                st.session_state.template_sections.remove(cleaned_section)
-                                # st.rerun() # Rerun to update the list visually
+                        for section in st.session_state.required_sections: # These are already cleaned
+                            already_added = section in st.session_state.template_sections
+                            is_selected = st.checkbox(section, value=already_added, key=f"rfp_section_select_{section}")
+                            if is_selected and section not in st.session_state.template_sections:
+                                st.session_state.template_sections.append(section)
+                                # st.rerun() # Consider removing immediate rerun for smoother UX unless necessary
+                            elif not is_selected and section in st.session_state.template_sections:
+                                st.session_state.template_sections.remove(section)
+                                # st.rerun()
                 else:
                     st.caption("No specific sections were automatically extracted from the RFP analysis.")
 
                 st.markdown("---")
-
                 st.markdown("#### Add Custom Section")
-                new_section_name = st.text_input("Enter custom section name:", key="new_section_name_input")
+                new_section_name_input = st.text_input("Enter custom section name:", key="new_section_name_input_field")
 
                 if st.button("Add Custom Section", type="secondary", key="add_custom_section_button"):
-                    if new_section_name:
-                        # Clean the new section name before adding
-                        normalized_new_section = remove_problematic_chars(new_section_name.strip().title())
-                        if normalized_new_section and normalized_new_section not in st.session_state.template_sections:
-                            st.session_state.template_sections.append(normalized_new_section)
-                            st.success(f"Section '{normalized_new_section}' added to template.")
-                            st.session_state.new_section_name_input = "" # Clear input field
-                            st.rerun() # Rerun to update the list immediately
-                        elif normalized_new_section in st.session_state.template_sections:
-                            st.warning(f"Section '{normalized_new_section}' already exists in template.")
+                    if new_section_name_input:
+                        cleaned_new_section = remove_problematic_chars(new_section_name_input.strip().title())
+                        if cleaned_new_section and cleaned_new_section not in st.session_state.template_sections:
+                            st.session_state.template_sections.append(cleaned_new_section)
+                            st.success(f"Section '{cleaned_new_section}' added to template.")
+                            # st.session_state.new_section_name_input_field = "" # Clear input if needed, text_input usually handles its state
+                            st.rerun()
+                        elif cleaned_new_section in st.session_state.template_sections:
+                            st.warning(f"Section '{cleaned_new_section}' already exists in template.")
                         else:
-                             st.warning("Please provide a valid section name.")
+                            st.warning("Please provide a valid section name (after cleaning).")
                     else:
                         st.warning("Please provide a section name.")
-
+                
                 st.markdown("---")
                 st.markdown("#### Current Proposal Template Sections")
-                # Use a unique key for each item in the list for removal
-                # Iterate over a copy of the list if modifying it during iteration
-                current_sections = st.session_state.template_sections[:]
-                for i, section in enumerate(current_sections):
+                current_sections_copy = st.session_state.template_sections[:]
+                for i, section_item in enumerate(current_sections_copy): # section_item is already cleaned
                     sec_col1, sec_col2 = st.columns([4, 1])
                     with sec_col1:
-                        # Display cleaned section name
-                        st.write(f"{i+1}. {remove_problematic_chars(section)}")
+                        st.write(f"{i+1}. {section_item}")
                     with sec_col2:
-                         # Use a unique key for each button based on index and cleaned section name
-                         if st.button("Remove", key=f"remove_template_section_{i}_{remove_problematic_chars(section)}"):
-                             st.session_state.template_sections.pop(i)
-                             st.rerun() # Rerun to update the list
-                             break # Exit loop after removing to avoid index issues
-
-
+                        if st.button("Remove", key=f"remove_template_section_{i}_{section_item}"):
+                            st.session_state.template_sections.pop(i)
+                            st.rerun()
+                            break
                 if not st.session_state.template_sections:
                     st.info("No sections selected for the template yet.")
 
@@ -2949,16 +2933,14 @@ input[type="radio"] {
                     if st.button("Confirm Sections & Proceed to Generate", type="primary", key="confirm_template_button"):
                         st.session_state.template_created = True
                         st.success("Template sections confirmed. Proceed to the 'Generate Proposal' tab.")
-                        # st.rerun() # Rerun to move to the next tab implicitly or explicitly
                 else:
                     st.button("Confirm Sections & Proceed to Generate", type="primary", key="confirm_template_button_disabled", disabled=True)
 
-            with col2:
+            with col2_tab2:
                 st.markdown('<div class="info-box sidebar-content">', unsafe_allow_html=True)
                 st.markdown("### 📝 Template Instructions")
                 st.markdown("""
-                1.  **Select Sections:** Choose from:
-                    * Sections identified in the current RFP.
+                1.  **Select Sections:** Choose from sections identified in the current RFP.
                 2.  **Add Custom:** Input any additional sections needed.
                 3.  **Review:** Check the 'Current Proposal Template Sections' list.
                 4.  **Remove:** Use the 'Remove' button next to any section you don't want.
@@ -2966,113 +2948,113 @@ input[type="radio"] {
                 """)
                 st.markdown('</div>', unsafe_allow_html=True)
 
-
     # Tab 3: Generate Proposal
     with tabs[2]:
         st.header("Generate Proposal")
 
         if not st.session_state.template_created:
-            st.warning("Please create a template first.")
+            st.warning("Please create a template first (Tab 2).")
         elif not st.session_state.generator:
-             st.warning("OpenAI API key is not configured. Please configure it to generate proposals.")
+            st.warning("OpenAI API key is not configured or Generator not initialized. Please check settings.")
         else:
-            col1, col2 = st.columns([1, 1])
+            col1_tab3, col2_tab3 = st.columns([1, 1])
 
-            with col1:
+            with col1_tab3:
                 st.markdown("### Proposal Configuration")
+                # client_name_input_gen will be cleaned by remove_problematic_chars
+                client_name_input_gen = st.text_input("Client Name", st.session_state.proposal_data.get('client_name', "Client Organization"), key="client_name_input_gen")
+                
+                # differentiators_input will be cleaned by remove_problematic_chars
+                differentiators_input = st.text_area("Company Differentiators",
+                                                st.session_state.proposal_data.get('differentiators', "Enter key differentiators"),
+                                                key="differentiators_input_gen")
 
-                # Use the client_name from session_state if available, otherwise default
-                # Clean client name input
-                client_name_gen = remove_problematic_chars(st.text_input("Client Name", st.session_state.get('client_name_input', "Client Organization"), key="client_name_input_gen"))
-                st.session_state.client_name_input = client_name_gen # Keep consistent client name across tabs
-
-
-                company_info = {
-                    "name": st.session_state.config["company_info"]["name"], # Assuming company name is safe ASCII
-                    # Clean differentiators input
-                    "differentiators": remove_problematic_chars(st.text_area("Company Differentiators",
-                                                     st.session_state.get('differentiators_input', "Enter key differentiators that make your company stand out"), # Preserve input
-                                                     key="differentiators_input"))
-                }
-
-                if st.button("Generate Proposal", type="primary"):
+                if st.button("Generate Proposal", type="primary", key="generate_proposal_btn"):
                     with st.spinner("Generating proposal..."):
                         try:
-                            # Generate proposal using template sections
-                            proposal_data = st.session_state.generator.generate_full_proposal(
-                                st.session_state.rfp_text, # rfp_text is already cleaned on upload
-                                client_name_gen, # Use the cleaned client name from input
-                                company_info, # Company info contains cleaned differentiators
-                                st.session_state.template_sections # Template sections are already cleaned
+                            cleaned_client_name = remove_problematic_chars(client_name_input_gen)
+                            cleaned_differentiators = remove_problematic_chars(differentiators_input)
+                            
+                            company_info_payload = {
+                                "name": st.session_state.config["company_info"]["name"], # Assumed safe
+                                "differentiators": cleaned_differentiators
+                            }
+                            # generate_full_proposal expects cleaned inputs or cleans them internally
+                            # st.session_state.rfp_text is already cleaned
+                            # st.session_state.template_sections contains cleaned section names
+                            proposal_data_result = st.session_state.generator.generate_full_proposal(
+                                st.session_state.rfp_text,
+                                cleaned_client_name,
+                                company_info_payload,
+                                st.session_state.template_sections
                             )
-                            st.session_state.proposal_data = proposal_data
+                            st.session_state.proposal_data = proposal_data_result # Result is cleaned by generate_full_proposal
+                            st.session_state.proposal_data['client_name'] = cleaned_client_name # ensure client name is updated
+                            st.session_state.proposal_data['differentiators'] = cleaned_differentiators # ensure differentiators updated
+
                             st.success("Proposal generated successfully!")
-                            st.rerun() # Rerun to display the preview tabs
+                            st.rerun()
                         except Exception as e:
                             st.error(f"Error generating proposal: {str(e)}")
+                            # Consider logging the full traceback for debugging
+                            import traceback
+                            print(traceback.format_exc())
 
-            with col2:
+
+            with col2_tab3:
                 st.markdown("### Generation Controls")
                 st.markdown("""
                 The proposal generation process:
-                1. Uses the RFP analysis to identify required sections
-                2. Embeds the RFP analysis for similarity search
-                3. Retrieves relevant content from the knowledge base
-                4. Generates sections that strictly adhere to RFP requirements
+                1. Uses the RFP analysis and your defined template sections.
+                2. Retrieves relevant content from the knowledge base.
+                3. Generates sections tailored to the RFP and your inputs.
                 """)
 
             if st.session_state.proposal_data and st.session_state.proposal_data["sections"]:
                 st.markdown("---")
                 st.header("Proposal Preview")
+                # Section names and content in proposal_data are already cleaned
+                section_names_preview = list(st.session_state.proposal_data["sections"].keys())
+                section_tabs_preview = st.tabs(section_names_preview)
 
-                section_names = list(st.session_state.proposal_data["sections"].keys())
-
-                # Use a list of section names to create tabs
-                section_tabs = st.tabs(section_names)
-
-                for i, section_name in enumerate(section_names):
-                    content = st.session_state.proposal_data["sections"][section_name]
-                    with section_tabs[i]:
-                        # Display cleaned content in the preview
-                        st.markdown(remove_problematic_chars(content))
-
+                for i, section_name_item in enumerate(section_names_preview):
+                    content_item = st.session_state.proposal_data["sections"][section_name_item]
+                    with section_tabs_preview[i]:
+                        st.markdown(content_item) # Display already cleaned content
                         st.markdown("---")
-                        col1, col2 = st.columns([3, 1])
-
-                        with col1:
-                            feedback = st.text_area(
+                        feedback_col1, feedback_col2 = st.columns([3, 1])
+                        with feedback_col1:
+                            # feedback_text will be cleaned before use
+                            feedback_text = st.text_area(
                                 "Provide feedback to improve this section:",
-                                key=f"feedback_{remove_problematic_chars(section_name)}" # Unique key with cleaned name
+                                key=f"feedback_{section_name_item}"
                             )
-
-                        with col2:
-                            st.markdown("<br>", unsafe_allow_html=True) # Add some space above the button
-                            if st.button("Update Section", key=f"update_{remove_problematic_chars(section_name)}"):
-                                if feedback:
+                        with feedback_col2:
+                            st.markdown("<br>", unsafe_allow_html=True)
+                            if st.button("Update Section", key=f"update_{section_name_item}"):
+                                if feedback_text:
                                     try:
-                                        with st.spinner(f"Updating '{remove_problematic_chars(section_name)}' based on feedback..."):
+                                        with st.spinner(f"Updating '{section_name_item}'..."):
                                             if not st.session_state.generator:
-                                                raise Exception("OpenAI API key is not configured")
-
-                                            # Pass cleaned inputs to refine_section
-                                            refined_content = st.session_state.generator.refine_section(
-                                                section_name, # section_name is already cleaned in proposal_data
-                                                content, # content is already cleaned in proposal_data
-                                                feedback, # feedback is cleaned within refine_section
-                                                st.session_state.proposal_data.get('client_name', 'Client') # client_name is cleaned in proposal_data
+                                                raise Exception("Generator not initialized.")
+                                            # refine_section expects cleaned inputs or cleans them internally
+                                            # section_name_item and content_item are from proposal_data (cleaned)
+                                            # st.session_state.proposal_data.get('client_name') is cleaned
+                                            refined_content_result = st.session_state.generator.refine_section(
+                                                section_name_item,
+                                                content_item,
+                                                feedback_text, # Will be cleaned by refine_section
+                                                st.session_state.proposal_data.get('client_name', 'Client')
                                             )
-
-                                            # Store cleaned refined content
-                                            st.session_state.proposal_data["sections"][section_name] = remove_problematic_chars(refined_content)
-
-                                            st.rerun() # Rerun to show the updated section
+                                            # Result from refine_section is cleaned
+                                            st.session_state.proposal_data["sections"][section_name_item] = refined_content_result
+                                            st.rerun()
                                     except Exception as e:
                                         st.error(f"Error updating section: {str(e)}")
                                 else:
                                     st.warning("Please provide feedback to update the section.")
-
-            else:
-                st.info("No sections available. Generate your proposal first.")
+            elif st.session_state.template_created : # only show if template was created but no sections yet
+                 st.info("Click 'Generate Proposal' to create the content for your selected sections.")
 
 
     # Tab 4: Export
@@ -3080,490 +3062,401 @@ input[type="radio"] {
         st.header("Export Your Proposal")
 
         if not st.session_state.proposal_data or not st.session_state.proposal_data["sections"]:
-            st.warning("Please generate your proposal first.")
-        elif not st.session_state.generator:
-             st.warning("OpenAI API key is not configured. Please configure it to generate proposals.")
+            st.warning("Please generate your proposal first (Tab 3).")
+        elif not st.session_state.generator: # Added this check based on pattern in other tabs
+            st.warning("OpenAI API key is not configured or Generator not initialized.")
         else:
-            col1, col2 = st.columns([2, 1])
+            col1_tab4, col2_tab4 = st.columns([2, 1])
 
-            with col1:
+            with col1_tab4:
                 st.markdown("### Export Settings")
+                # company_name_export is from config, assumed safe
+                company_name_export = st.session_state.config["company_info"]["name"]
+                # client_name_for_export is from proposal_data, already cleaned
+                client_name_for_export = st.session_state.proposal_data.get("client_name", "Client")
 
-                company_name = st.session_state.config["company_info"]["name"]
-                # Use the client name from the generated proposal data (already cleaned)
-                client_name_export = st.session_state.proposal_data.get("client_name", "Client")
-
-                uploaded_logo = st.file_uploader("Upload Company Logo (optional)", type=["png", "jpg", "jpeg"])
-                logo_path = None
-                if uploaded_logo:
-                    image = Image.open(uploaded_logo)
-                    logo_path = "temp_logo.png" # Save to a temporary file
+                uploaded_logo_export = st.file_uploader("Upload Company Logo for Export (optional)", type=["png", "jpg", "jpeg"], key="logo_uploader_export")
+                logo_path_export = None
+                if uploaded_logo_export:
                     try:
-                        image.save(logo_path)
+                        # Save to a temporary file with correct extension for fpdf/docx
+                        logo_ext = os.path.splitext(uploaded_logo_export.name)[1]
+                        if not logo_ext: logo_ext = ".png" # default if no ext
+                        with tempfile.NamedTemporaryFile(delete=False, suffix=logo_ext) as temp_logo_file:
+                            temp_logo_file.write(uploaded_logo_export.getvalue())
+                            logo_path_export = temp_logo_file.name
                     except Exception as e:
-                        st.error(f"Error saving logo file: {e}")
-                        logo_path = None # Reset logo_path if saving fails
+                        st.error(f"Error processing logo for export: {e}")
+                        logo_path_export = None
 
 
-                export_format = st.selectbox(
+                export_format_selection = st.selectbox(
                     "Export Format",
                     ["Word Document (.docx)", "PDF Document (.pdf)", "Markdown (.md)"],
                     key="export_format_select"
                 )
 
-                if st.button("Export", type="primary"):
-                    with st.spinner(f"Exporting proposal as {export_format}..."):
+                if st.button("Export", type="primary", key="export_button_final"):
+                    with st.spinner(f"Exporting proposal as {export_format_selection}..."):
                         try:
-                            # Ensure output directory exists
-                            output_dir = "exported_proposals"
-                            if not os.path.exists(output_dir):
-                                os.makedirs(output_dir)
+                            output_dir_export = "exported_proposals"
+                            if not os.path.exists(output_dir_export):
+                                os.makedirs(output_dir_export)
+                            
+                            # Prepare a safe filename base from the cleaned client name
+                            safe_client_name_part = client_name_for_export.replace(' ', '_').replace('/', '_') # basic sanitize
+                            timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 
-                            if export_format == "Word Document (.docx)":
-                                # Ensure filename is safe
-                                output_filename = f"Proposal_for_{remove_problematic_chars(client_name_export).replace(' ', '_')}_{datetime.now().strftime('%Y%m%d%H%M%S')}.docx"
-                                output_path = os.path.join(output_dir, output_filename)
-                                final_path = export_to_word(
-                                    st.session_state.proposal_data, # Data contains cleaned text
-                                    company_name, # company_name is assumed safe or cleaned in export_to_word
-                                    client_name_export, # client_name_export is already cleaned
-                                    output_path,
-                                    logo_path
+                            if export_format_selection == "Word Document (.docx)":
+                                output_filename_export = f"Proposal_for_{safe_client_name_part}_{timestamp}.docx"
+                                output_path_export = os.path.join(output_dir_export, output_filename_export)
+                                # export_to_word expects cleaned data or cleans it internally
+                                # st.session_state.proposal_data contains cleaned sections/client_name
+                                final_path_result = export_to_word(
+                                    st.session_state.proposal_data,
+                                    company_name_export,
+                                    client_name_for_export,
+                                    output_path_export,
+                                    logo_path_export # Can be None
                                 )
-                                if final_path and os.path.exists(final_path):
-                                    with open(final_path, "rb") as file:
+                                if final_path_result and os.path.exists(final_path_result):
+                                    with open(final_path_result, "rb") as file_docx:
                                         st.download_button(
-                                            label="Download Word Document",
-                                            data=file,
-                                            file_name=output_filename,
+                                            label="Download Word Document", data=file_docx,
+                                            file_name=output_filename_export,
                                             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                                         )
-                                else:
-                                     st.error("Failed to create Word document.")
+                                else: st.error("Failed to create Word document.")
 
-
-                            elif export_format == "PDF Document (.pdf)":
-                                # Ensure filename is safe
-                                output_filename = f"Proposal_for_{remove_problematic_chars(client_name_export).replace(' ', '_')}_{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
-                                output_path = os.path.join(output_dir, output_filename)
-                                # Ensure client_name_export is passed as a string (already cleaned)
-                                final_path = export_to_pdf(
-                                    st.session_state.proposal_data, # Data contains cleaned text
-                                    company_name, # company_name is assumed safe or cleaned in export_to_pdf
-                                    client_name_export, # client_name_export is already cleaned
-                                    output_path,
-                                    logo_path
+                            elif export_format_selection == "PDF Document (.pdf)":
+                                output_filename_export = f"Proposal_for_{safe_client_name_part}_{timestamp}.pdf"
+                                output_path_export = os.path.join(output_dir_export, output_filename_export)
+                                # export_to_pdf expects cleaned data or cleans it internally
+                                final_path_result = export_to_pdf(
+                                    st.session_state.proposal_data,
+                                    company_name_export,
+                                    client_name_for_export, # Already cleaned
+                                    output_path_export,
+                                    logo_path_export # Can be None
                                 )
-                                if final_path and os.path.exists(final_path):
-                                    with open(final_path, "rb") as file:
+                                if final_path_result and os.path.exists(final_path_result):
+                                    with open(final_path_result, "rb") as file_pdf:
                                         st.download_button(
-                                            label="Download PDF",
-                                            data=file,
-                                            file_name=output_filename,
-                                            mime="application/pdf"
+                                            label="Download PDF", data=file_pdf,
+                                            file_name=output_filename_export, mime="application/pdf"
                                         )
-                                else:
-                                     st.error("Failed to create PDF document. Ensure 'fpdf' is installed.")
-
-
-                            else: # Markdown format
-                                # Ensure filename is safe
-                                output_filename = "Proposal_for_{}_{}.md".format(
-                                    remove_problematic_chars(client_name_export).replace(' ', '_') if client_name_export else 'Client',
-                                    datetime.now().strftime('%Y%m%d%H%M%S')
-                                )
-                                md_content = f"# Proposal for {remove_problematic_chars(client_name_export)}\n\n" # Clean client name
-                                for section_name, content in st.session_state.proposal_data["sections"].items():
-                                    # Clean section name and content for markdown
-                                    md_content += f"## {remove_problematic_chars(section_name)}\n\n{remove_problematic_chars(content)}\n\n"
-
+                                else: st.error("Failed to create PDF document. Ensure 'fpdf' is installed if using PDF export.")
+                            
+                            else: # Markdown
+                                output_filename_export = f"Proposal_for_{safe_client_name_part}_{timestamp}.md"
+                                # All content for md is from proposal_data, which is cleaned
+                                md_content_export = f"# Proposal for {client_name_for_export}\n\n"
+                                for sec_name, sec_content in st.session_state.proposal_data["sections"].items():
+                                    md_content_export += f"## {sec_name}\n\n{sec_content}\n\n"
                                 st.download_button(
-                                    label="Download Markdown File",
-                                    data=md_content,
-                                    file_name=output_filename,
-                                    mime="text/markdown"
+                                    label="Download Markdown File", data=md_content_export,
+                                    file_name=output_filename_export, mime="text/markdown"
                                 )
-
-                            st.success("Export completed successfully!")
-
+                            st.success("Export process initiated.")
                         except Exception as e:
                             st.error(f"An unexpected error occurred during export: {str(e)}")
+                            import traceback
+                            print(traceback.format_exc()) # For server-side debugging
                         finally:
-                            # Clean up the temporary logo file after export attempt
-                            if logo_path and os.path.exists(logo_path):
-                                os.remove(logo_path)
+                            if logo_path_export and os.path.exists(logo_path_export):
+                                try:
+                                    os.remove(logo_path_export) # Clean up temp logo
+                                except Exception as e_rm:
+                                    print(f"Error removing temp logo: {e_rm}")
 
 
-            with col2:
+            with col2_tab4:
                 st.markdown("### Export Options")
                 st.markdown("""
                 You can export your proposal in multiple formats:
-                1. **Word Document**: Professional document with formatting
-                2. **PDF Document**: Fixed-format document for printing or sharing
-                3. **Markdown**: Text-based format for easy editing
+                1. **Word Document**: Professional document with formatting.
+                2. **PDF Document**: Fixed-format document for printing or sharing.
+                3. **Markdown**: Text-based format for easy editing.
                 """)
+
 
     # Tab 5: Advanced Analysis
     with tabs[4]:
         st.header("Advanced Proposal Analysis")
 
         if not st.session_state.proposal_data or not st.session_state.proposal_data["sections"]:
-            st.warning("Please generate your proposal first.")
+            st.warning("Please generate your proposal first (Tab 3).")
         elif not st.session_state.generator:
-             st.warning("OpenAI API key is not configured. Please configure it to generate analysis.")
+            st.warning("OpenAI API key is not configured or Generator not initialized.")
         else:
             if st.button("Generate Advanced Analysis", type="primary", key="advanced_analysis_button"):
                 with st.spinner("Generating advanced analysis..."):
                     try:
-                        internal_capabilities = st.session_state.config.get("internal_capabilities", {})
-                        # Pass cleaned data to generate_advanced_analysis
-                        advanced_analysis = st.session_state.generator.generate_advanced_analysis(
-                            st.session_state.proposal_data, # Data contains cleaned text
-                            st.session_state.rfp_analysis, # rfp_analysis is already cleaned
-                            internal_capabilities, # internal_capabilities are cleaned within generate_advanced_analysis
-                            st.session_state.proposal_data.get('client_name', 'Client') # client_name is cleaned in proposal_data
+                        internal_capabilities_adv = st.session_state.config.get("internal_capabilities", {})
+                        # generate_advanced_analysis expects cleaned data or cleans internally
+                        # proposal_data, rfp_analysis, client_name are already cleaned in session_state
+                        advanced_analysis_result = st.session_state.generator.generate_advanced_analysis(
+                            st.session_state.proposal_data,
+                            st.session_state.rfp_analysis,
+                            internal_capabilities_adv, # Will be cleaned by generate_advanced_analysis
+                            st.session_state.proposal_data.get('client_name', 'Client')
                         )
-                        st.session_state.advanced_analysis = advanced_analysis # Store cleaned analysis results
+                        st.session_state.advanced_analysis = advanced_analysis_result # Results are cleaned
                         st.success("Advanced Analysis Complete")
-                        st.rerun() # Rerun to display results
+                        st.rerun()
                     except Exception as e:
                         st.error(f"Error generating advanced analysis: {str(e)}")
 
             if st.session_state.advanced_analysis and any(st.session_state.advanced_analysis.values()):
                 st.markdown("### Advanced Analysis Results")
-
+                # All results from advanced_analysis are already cleaned
                 if st.session_state.advanced_analysis.get("compliance_matrix"):
                     st.markdown("#### Compliance Matrix")
-                    # Display cleaned compliance matrix
-                    st.markdown(remove_problematic_chars(st.session_state.advanced_analysis["compliance_matrix"]))
-
+                    st.markdown(st.session_state.advanced_analysis["compliance_matrix"])
                 if st.session_state.advanced_analysis.get("risk_assessment"):
                     st.markdown("#### Risk Assessment")
-                    # Display cleaned risk assessment
-                    st.markdown(remove_problematic_chars(st.session_state.advanced_analysis["risk_assessment"]))
-
+                    st.markdown(st.session_state.advanced_analysis["risk_assessment"])
                 if st.session_state.advanced_analysis.get("alignment_assessment"):
                     st.markdown("#### Alignment Assessment")
-                    # Display cleaned alignment assessment
-                    st.markdown(remove_problematic_chars(st.session_state.advanced_analysis["alignment_assessment"]))
-
+                    st.markdown(st.session_state.advanced_analysis["alignment_assessment"])
                 if st.session_state.advanced_analysis.get("compliance_assessment"):
-                    st.markdown("#### Compliance Assessment")
-                    # Display cleaned compliance assessment
-                    st.markdown(remove_problematic_chars(st.session_state.advanced_analysis["compliance_assessment"]))
-
-                if st.session_state.advanced_analysis.get("quality_assurance"):
-                    st.markdown("#### Quality Assurance")
-                    # Display cleaned quality assurance
-                    st.markdown(remove_problematic_chars(st.session_state.advanced_analysis["quality_assurance"]))
-            elif st.session_state.get("advanced_analysis_button"): # Only show if button was clicked but no results
+                    st.markdown("#### Compliance Assessment (Internal)")
+                    st.markdown(st.session_state.advanced_analysis["compliance_assessment"])
+                # Note: 'quality_assurance' was in your original code but not added to advanced_analysis dict. Add if needed.
+            elif st.session_state.get("advanced_analysis_button_clicked_flag", False): # You'd need to set this flag
                  st.info("Click 'Generate Advanced Analysis' to see results.")
 
 
     # Tab 6: Vendor Proposal Evaluation
-    with tabs[5]: # Adjust index if you added/removed tabs
+    with tabs[5]:
         st.header("Vendor Proposal Evaluation")
 
         if not st.session_state.rfp_analysis:
             st.warning("Please upload and analyze an RFP first (Tab 1).")
         elif not st.session_state.generator:
-             st.warning("OpenAI API key is not configured. Please configure it to evaluate vendor proposals.")
+            st.warning("OpenAI API key is not configured or Generator not initialized.")
         else:
-            # --- Dynamic Weightage Configuration UI ---
             st.markdown("---")
             st.subheader("⚙️ Configure Scoring Weightage")
+            
+            num_metrics_eval = len(st.session_state.dynamic_weights)
+            num_cols_for_weights_eval = min(num_metrics_eval, 4) # Max 4 columns for weights
+            cols_weights_eval = st.columns(num_cols_for_weights_eval if num_cols_for_weights_eval > 0 else 1)
 
-            # Get default weights from config or use session state if already modified
-            # Initialize session state for dynamic weights if not already present
-            # Ensure scoring_system and weighting keys exist before accessing
-            if 'dynamic_weights' not in st.session_state or not st.session_state.dynamic_weights:
-                 # Use a copy to avoid modifying the original config in session state directly
-                 st.session_state.dynamic_weights = st.session_state.config.get('scoring_system', {}).get('weighting', {}).copy()
-                 if not st.session_state.dynamic_weights:
-                      # Fallback if weighting is also missing
-                      st.session_state.dynamic_weights = {
-                         "requirement_match": 0.4,
-                         "compliance": 0.25,
-                         "quality": 0.2,
-                         "alignment": 0.15,
-                         "risk": 0.1
-                      }
-                      st.warning("Scoring system weights not found in config. Using default weights.")
+            st.markdown("Enter weights (e.g., decimals summing to 1.0, or percentages summing to 100):")
+            total_weight_sum_eval = 0.0
+            metrics_list_eval = list(st.session_state.dynamic_weights.keys())
 
-
-            # Ensure consistent number of columns based on the number of metrics
-            num_metrics = len(st.session_state.dynamic_weights)
-            # Use a fixed number of columns (e.g., 4 or 5) and wrap metrics
-            num_cols_for_weights = 4
-            cols = st.columns(num_cols_for_weights)
-
-            st.markdown("Enter weights (e.g., as decimals summing to 1.0 or percentages summing to 100):")
-
-            total_weight_sum = 0.0
-            metric_inputs = {} # Dictionary to hold the st.number_input widgets
-
-            metrics_list = list(st.session_state.dynamic_weights.keys()) # Get metrics from dynamic_weights
-            for i, metric in enumerate(metrics_list):
-                # Calculate the column index
-                col_index = i % num_cols_for_weights
-                with cols[col_index]:
-                    # Use the value from session_state.dynamic_weights for initialization
-                    current_weight = st.session_state.dynamic_weights.get(metric, 0.0) # Default to 0.0 if metric somehow missing
-                    metric_inputs[metric] = st.number_input(
-                        f"{metric.replace('_', ' ').title()}",
-                        min_value=0.0,
-                        # max_value=100.0, # Allow input up to 100 for percentage-like input - removed max for flexibility
-                        value=current_weight,
-                        step=0.01,
-                        format="%.2f",
-                        key=f"weight_input_{metric}" # Unique key for each input
+            for i, metric_key in enumerate(metrics_list_eval):
+                col_idx_eval = i % num_cols_for_weights_eval if num_cols_for_weights_eval > 0 else 0
+                with cols_weights_eval[col_idx_eval]:
+                    current_weight_val = st.session_state.dynamic_weights.get(metric_key, 0.0)
+                    new_weight = st.number_input(
+                        f"{metric_key.replace('_', ' ').title()}", min_value=0.0,
+                        value=current_weight_val, step=0.01, format="%.2f",
+                        key=f"weight_input_eval_{metric_key}"
                     )
-                    # Update the session state with the new value immediately when input changes
-                    st.session_state.dynamic_weights[metric] = metric_inputs[metric]
-                    total_weight_sum += metric_inputs[metric]
+                    if new_weight != current_weight_val: # Update only if changed to avoid excessive reruns
+                        st.session_state.dynamic_weights[metric_key] = new_weight
+                        # st.rerun() # Rerun to update total_weight_sum_eval display
+                    total_weight_sum_eval += new_weight # Summing up current values for display
 
-
-            # Display the current sum of weights
-            st.info(f"Current total weight sum: {total_weight_sum:.2f}")
-            # Add a visual cue if the sum is not close to 1 or 100
-            if abs(total_weight_sum - 1.0) > 0.01 and abs(total_weight_sum - 100.0) > 1:
-                 st.warning("Weights do not sum to 1.0 or 100.0. The calculated score will be a sum of (score * weight).")
-
+            st.info(f"Current total weight sum: {total_weight_sum_eval:.2f}")
+            if abs(total_weight_sum_eval - 1.0) > 0.01 and abs(total_weight_sum_eval - 100.0) > 1.0:
+                st.warning("Weights typically sum to 1.0 (for decimals) or 100.0 (for percentages). The score will be Σ(metric_score * weight).")
 
             st.markdown("---")
-            # --- End Dynamic Weightage Configuration UI ---
+            uploaded_vendor_proposal_file = st.file_uploader("Upload Vendor Proposal", type=["docx", "pdf", "txt", "md"], key="vendor_proposal_upload")
 
-            uploaded_vendor_proposal = st.file_uploader("Upload Vendor Proposal", type=["docx", "pdf", "txt", "md"], key="vendor_proposal_upload")
+            if uploaded_vendor_proposal_file:
+                # Process vendor proposal file (ensure it's only processed once or if file changes)
+                if (st.session_state.get('processed_vendor_file_name') != uploaded_vendor_proposal_file.name or
+                    st.session_state.get('processed_vendor_file_size') != uploaded_vendor_proposal_file.size):
+                    temp_vendor_file_path = ""
+                    try:
+                        vendor_file_ext = os.path.splitext(uploaded_vendor_proposal_file.name)[1] or ".tmp"
+                        with tempfile.NamedTemporaryFile(delete=False, suffix=vendor_file_ext) as temp_vp_file:
+                            temp_vp_file.write(uploaded_vendor_proposal_file.getvalue())
+                            temp_vendor_file_path = temp_vp_file.name
+                        
+                        vendor_proposal_text_content = process_rfp(temp_vendor_file_path) # Reuses your RFP processing
+                        st.session_state.vendor_proposal_text = vendor_proposal_text_content # Already cleaned
+                        st.session_state.processed_vendor_file_name = uploaded_vendor_proposal_file.name
+                        st.session_state.processed_vendor_file_size = uploaded_vendor_proposal_file.size
+                        st.session_state.vendor_analysis = None # Reset previous analysis
+                        st.session_state.vendor_score_results = None
+                        st.session_state.vendor_gaps_risks = None
+                        st.success(f"Processed vendor proposal: {uploaded_vendor_proposal_file.name}")
+                    except Exception as e_vp:
+                        st.error(f"Error processing vendor proposal: {e_vp}")
+                    finally:
+                        if temp_vendor_file_path and os.path.exists(temp_vendor_file_path):
+                            os.unlink(temp_vendor_file_path)
+                
+                if st.session_state.get('vendor_proposal_text'):
+                    with st.expander("Preview Vendor Proposal Content", expanded=False):
+                        st.text_area("Vendor Proposal Text", st.session_state.vendor_proposal_text, height=300, key="vendor_proposal_preview_text")
+                    
+                    # client_name_for_eval will be cleaned
+                    client_name_for_eval = st.text_input("Client Name (for analysis context)",
+                                                         st.session_state.proposal_data.get('client_name', "Client Organization"),
+                                                         key="client_name_eval_input")
 
-            if uploaded_vendor_proposal:
-                # ... (file processing logic as before) ...
-                try:
-                    # Use a unique key for vendor proposal text state
-                    # Check if a file is uploaded AND it's a new file or the content needs reprocessing
-                    if ('vendor_proposal_text' not in st.session_state or
-                        st.session_state.get('processed_vendor_file') != uploaded_vendor_proposal.name or
-                        st.session_state.get('processed_vendor_file_size') != uploaded_vendor_proposal.size): # Check file size too
+                    if st.button("Analyze Vendor Proposal", type="primary", key="analyze_vendor_button"):
+                        with st.spinner("Analyzing vendor proposal... This may take a moment."):
+                            try:
+                                cleaned_client_name_eval = remove_problematic_chars(client_name_for_eval)
+                                current_scoring_config_eval = {
+                                    "weighting": st.session_state.dynamic_weights,
+                                    "grading_scale": st.session_state.config.get('scoring_system', {}).get('grading_scale', {})
+                                }
+                                # vendor_proposal_text and rfp_analysis are already cleaned in session_state
+                                analysis_text_result = st.session_state.generator.analyze_vendor_proposal(
+                                    st.session_state.vendor_proposal_text,
+                                    st.session_state.rfp_analysis,
+                                    cleaned_client_name_eval,
+                                    current_scoring_config_eval
+                                )
+                                st.session_state.vendor_analysis = analysis_text_result # Result is cleaned
 
-                         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=f".{uploaded_vendor_proposal.name.split('.')[-1]}")
-                         temp_file.write(uploaded_vendor_proposal.getvalue())
-                         temp_file.close()
-                         proposal_text = process_rfp(temp_file.name)
-                         st.session_state.vendor_proposal_text = proposal_text # Store cleaned text
-                         st.session_state.processed_vendor_file = uploaded_vendor_proposal.name # Track processed file name
-                         st.session_state.processed_vendor_file_size = uploaded_vendor_proposal.size # Track processed file size
-                         st.session_state.vendor_analysis = None # Reset analysis when new file uploaded
-                         st.session_state.vendor_score_results = None # Reset scores
-                         st.session_state.vendor_gaps_risks = None # Reset gaps/risks
-                         st.success(f"Successfully processed {uploaded_vendor_proposal.name}")
-                         if os.path.exists(temp_file.name):
-                             os.unlink(temp_file.name)
-                    elif st.session_state.get('vendor_proposal_text'):
-                         # If the file is the same and text is already loaded, just show the preview
-                         with st.expander("Preview Vendor Proposal Content", expanded=False):
-                             # Display cleaned text in the preview
-                             st.text_area("Proposal Text", remove_problematic_chars(st.session_state.vendor_proposal_text), height=300, key="vendor_proposal_preview")
+                                weighted_score_res, ind_scores_res, grade_res = st.session_state.generator.calculate_weighted_score(
+                                    analysis_text_result, current_scoring_config_eval
+                                )
+                                st.session_state.vendor_score_results = {
+                                    "weighted_score": weighted_score_res,
+                                    "individual_scores": ind_scores_res,
+                                    "grade": grade_res # Already cleaned by calculate_weighted_score
+                                }
+                                
+                                # rfp_analysis is used as requirements context, already cleaned
+                                gaps_res, risks_res = st.session_state.generator.identify_gaps_and_risks(
+                                    st.session_state.vendor_proposal_text,
+                                    st.session_state.rfp_analysis
+                                )
+                                st.session_state.vendor_gaps_risks = {"gaps": gaps_res, "risks": risks_res} # Results are cleaned
+
+                                st.success("Vendor Analysis and Scoring Complete!")
+                                st.rerun()
+                            except Exception as e_analyze_vp:
+                                st.error(f"Error analyzing vendor proposal: {str(e_analyze_vp)}")
+                                st.session_state.vendor_analysis = remove_problematic_chars(f"Analysis Error: {str(e_analyze_vp)}")
+                                st.session_state.vendor_score_results = None
+                                st.session_state.vendor_gaps_risks = None
 
 
-                except Exception as e:
-                    st.error(f"Error processing file: {str(e)}")
-                    # Clean up temp file if it was created during an error
-                    if 'temp_file' in locals() and os.path.exists(temp_file.name):
-                        os.unlink(temp_file.name)
-
-            # Only show analysis button if vendor text is loaded
-            if st.session_state.get('vendor_proposal_text'):
-                # Use the client name from the generated proposal data if available, otherwise default
-                # Clean client name input
-                client_name_eval = remove_problematic_chars(st.text_input("Client Name (for analysis context)", st.session_state.proposal_data.get('client_name', "Client Organization"), key="client_name_eval"))
-
-                if st.button("Analyze Vendor Proposal", type="primary", key="analyze_vendor_button"):
-                    with st.spinner("Analyzing vendor proposal... This may take a moment."):
-                        try:
-                            # Call analyze_vendor_proposal.
-                            # Pass the *current* scoring system configuration to the LLM for scoring guidance.
-                            # The weights themselves are primarily used for the calculation *after* the LLM scores.
-                            current_scoring_config = {
-                                "weighting": st.session_state.dynamic_weights,
-                                "grading_scale": st.session_state.config.get('scoring_system', {}).get('grading_scale', {}) # Safely access grading_scale
-                            }
-                            # Pass cleaned inputs to analyze_vendor_proposal
-                            analysis = st.session_state.generator.analyze_vendor_proposal(
-                                remove_problematic_chars(st.session_state.vendor_proposal_text),
-                                remove_problematic_chars(st.session_state.rfp_analysis),
-                                client_name_eval, # client_name_eval is already cleaned
-                                current_scoring_config # Pass the current config to the LLM
-                            )
-                            st.session_state.vendor_analysis = analysis # Store cleaned raw analysis
-
-                            # Use the dynamic weights from session_state for calculation
-                            # Pass cleaned analysis text to calculate_weighted_score
-                            weighted_score, individual_scores, grade = st.session_state.generator.calculate_weighted_score(
-                                analysis, # analysis is already cleaned
-                                {"weighting": st.session_state.dynamic_weights, "grading_scale": st.session_state.config.get('scoring_system', {}).get('grading_scale', {})} # Safely access grading_scale
-                            )
-                            st.session_state.vendor_score_results = {
-                                "weighted_score": weighted_score,
-                                "individual_scores": individual_scores,
-                                "grade": grade
-                            }
-
-                            # Identify gaps and risks (Optional but useful)
-                            # Pass cleaned inputs to identify_gaps_and_risks
-                            rfp_requirements_text = remove_problematic_chars(st.session_state.rfp_analysis) # Use cleaned full analysis for context
-                            gaps, risks = st.session_state.generator.identify_gaps_and_risks(
-                                remove_problematic_chars(st.session_state.vendor_proposal_text),
-                                rfp_requirements_text
-                            )
-                            st.session_state.vendor_gaps_risks = {"gaps": gaps, "risks": risks} # Gaps/risks are already cleaned
-
-                            st.success("Analysis and Scoring Complete!")
-                            st.rerun() # Rerun to display results cleanly below
-
-                        except Exception as e:
-                            st.error(f"Error analyzing proposal: {str(e)}")
-                            st.session_state.vendor_analysis = remove_problematic_chars(f"Analysis Error: {str(e)}") # Store cleaned error message
-                            st.session_state.vendor_score_results = None
-                            st.session_state.vendor_gaps_risks = None
-
-            # Display analysis results, scores, and gaps/risks if available
             if st.session_state.get('vendor_analysis'):
                 st.markdown("---")
                 st.header("Vendor Analysis Results")
-
-                # Display Scoring Summary First
                 if st.session_state.get('vendor_score_results'):
-                    score_results = st.session_state.vendor_score_results
-                    st.subheader("📊 Scoring Summary (Based on Configured Weights)")
-                    # Use the calculated weighted score from the results
-                    if score_results['weighted_score'] is not None:
-                         # We'll display the calculated score after normalization in calculate_weighted_score.
-                         st.metric(label="Overall Weighted Score (Normalized)", value=f"{score_results['weighted_score']:.2f}")
-                         # Display cleaned grade
-                         st.metric(label="Grade", value=remove_problematic_chars(score_results['grade'] or "N/A"))
+                    score_res_display = st.session_state.vendor_score_results
+                    st.subheader("📊 Scoring Summary")
+                    if score_res_display['weighted_score'] is not None:
+                        st.metric(label="Overall Weighted Score (Normalized)", value=f"{score_res_display['weighted_score']:.2f}")
+                        st.metric(label="Grade", value=score_res_display['grade'] or "N/A") # grade is cleaned
+                        
+                        st.markdown("##### Individual Metric Scores (AI Assessed: 0-100):")
+                        if score_res_display.get('individual_scores'):
+                            metrics_disp = sorted(score_res_display['individual_scores'].keys())
+                            cols_ind_scores = st.columns(min(len(metrics_disp), 5))
+                            for i, metric_item_key in enumerate(metrics_disp):
+                                score_val = score_res_display['individual_scores'].get(metric_item_key)
+                                with cols_ind_scores[i % len(cols_ind_scores)]:
+                                    # Metric name and score are cleaned
+                                    st.metric(label=remove_problematic_chars(metric_item_key.replace('_', ' ').title()),
+                                              value=str(score_val) if score_val is not None else "N/A")
+                            st.caption("Overall Score uses configured weights. Individual scores are AI's raw assessment per metric.")
+                        else: st.info("No individual metric scores extracted.")
+                    else: 
+                        st.warning("Could not calculate weighted score. Check AI analysis output or weights.")
+                        st.write("Individual Scores Found (Raw AI):", score_res_display.get('individual_scores', "N/A"))
 
-                         st.markdown("##### Individual Metric Scores (as scored by AI - 0-100):")
-                         # Ensure individual_scores is not None before iterating
-                         if score_results.get('individual_scores'):
-                              # Sort metrics alphabetically for consistent display
-                              metrics_to_display = sorted(score_results['individual_scores'].keys())
-                              cols = st.columns(min(len(metrics_to_display), 5)) # Limit columns for display
-                              i = 0
-                              for metric in metrics_to_display:
-                                  score = score_results['individual_scores'].get(metric) # Use .get for safety
-                                  with cols[i % len(cols)]:
-                                         # Display cleaned metric name and score
-                                         st.metric(label=remove_problematic_chars(metric.replace('_', ' ').title()), value=str(score) if score is not None else "N/A")
-                                  i += 1
-                              st.caption("Note: Individual scores are AI's raw assessment (0-100); Overall Score is calculated using the configured weights above.")
-                         else:
-                              st.info("No individual metric scores were extracted from the AI analysis.")
-
-                    else:
-                         st.warning("Could not calculate weighted score. Scores may be missing in the analysis or weights not configured.")
-                         # Display cleaned individual scores
-                         st.write("Individual Scores Found:", remove_problematic_chars(str(score_results.get('individual_scores', "N/A"))))
-
-                # Display Gaps and Risks
                 if st.session_state.get('vendor_gaps_risks'):
-                     gaps_risks = st.session_state.vendor_gaps_risks
-                     # Check if either gaps or risks list is non-empty
-                     if gaps_risks.get('gaps') or gaps_risks.get('risks'):
-                          st.subheader("⚠️ Identified Gaps & Risks (Beta)")
-                          if gaps_risks.get('gaps'):
-                               st.markdown("##### Gaps:")
-                               if gaps_risks['gaps']:
-                                    for gap in gaps_risks['gaps']:
-                                         # Display cleaned gaps
-                                         st.markdown(f"- {remove_problematic_chars(gap)}")
-                               else:
-                                    st.info("No significant gaps automatically identified.")
-                          if gaps_risks.get('risks'):
-                               st.markdown("##### Risks:")
-                               if gaps_risks['risks']:
-                                    for risk in gaps_risks['risks']:
-                                         # Display cleaned risks
-                                         st.markdown(f"- {remove_problematic_chars(risk)}")
-                               else:
-                                     st.info("No significant risks automatically identified.")
-                     # If both lists are empty, show a general message
-                     elif gaps_risks.get('gaps') is not None and gaps_risks.get('risks') is not None:
-                          st.info("No significant gaps or risks automatically identified based on similarity and keywords.")
-
-
-                # Display the full AI analysis text
+                    gaps_risks_disp = st.session_state.vendor_gaps_risks
+                    if gaps_risks_disp.get('gaps') or gaps_risks_disp.get('risks'):
+                        st.subheader("⚠️ Identified Gaps & Risks (Beta)")
+                        if gaps_risks_disp.get('gaps'):
+                            st.markdown("##### Gaps:")
+                            if gaps_risks_disp['gaps']:
+                                for gap_item in gaps_risks_disp['gaps']: st.markdown(f"- {gap_item}") # Already cleaned
+                            else: st.info("No significant gaps automatically identified.")
+                        if gaps_risks_disp.get('risks'):
+                            st.markdown("##### Risks:")
+                            if gaps_risks_disp['risks']:
+                                for risk_item in gaps_risks_disp['risks']: st.markdown(f"- {risk_item}") # Already cleaned
+                            else: st.info("No significant risks automatically identified.")
+                    elif gaps_risks_disp.get('gaps') is not None and gaps_risks_disp.get('risks') is not None:
+                         st.info("No significant gaps or risks automatically identified based on current analysis.")
+                
                 st.subheader("🤖 Full AI Analysis Text")
-                # Display cleaned vendor analysis
-                st.markdown(remove_problematic_chars(st.session_state.vendor_analysis))
+                st.markdown(st.session_state.vendor_analysis) # Already cleaned
 
     # Tab 7: RFP Template Creator
     with tabs[6]:
         st.header("RFP Template Creator")
+        col1_tab7, col2_tab7 = st.columns([2, 1])
 
-        col1, col2 = st.columns([2, 1])
+        with col1_tab7:
+            st.markdown("### Create RFP Template from Scratch")
+            # company_objectives_input will be cleaned before use
+            company_objectives_input = st.text_area("Company Objectives for this RFP", height=200, key="objectives_input_tab7")
+            # template_type_selection will be cleaned before use
+            template_type_selection = st.selectbox("Select Standard Template Type", 
+                                                   st.session_state.config.get("proposal_settings", {}).get("templates", ["Standard RFP", "Technical RFP", "Commercial RFP"]) + ["Custom"], 
+                                                   key="template_type_select_tab7")
+            custom_template_name_input = ""
+            if template_type_selection == "Custom":
+                # custom_template_name_input will be cleaned before use
+                custom_template_name_input = st.text_input("Custom Template Name", key="custom_template_name_tab7")
 
-        with col1:
-            st.markdown("### Create RFP Template")
-            # Clean company objectives input
-            company_objectives = remove_problematic_chars(st.text_area("Company Objectives", height=200, key="objectives_input"))
-            # Clean template type input
-            template_type = remove_problematic_chars(st.selectbox("Template Type", ["Standard RFP", "Technical RFP", "Commercial RFP", "Custom"], key="template_type_select"))
-
-            if template_type == "Custom":
-                # Clean custom template name input
-                custom_template_name = remove_problematic_chars(st.text_input("Custom Template Name", key="custom_template_name"))
-            else:
-                custom_template_name = ""
-
-            if st.button("Generate RFP Template", type="primary", key="generate_template_button"):
-                with st.spinner("Generating RFP template..."):
-                    try:
-                        # Check if OpenAI API key is configured
-                        openai_key = st.session_state.config["api_keys"]["openai_key"]
-                        if not openai_key:
-                             st.error("OpenAI API key is not configured. Please add it to config.json or set the OPENAI_API_KEY environment variable.")
-                             st.stop() # Stop execution if key is missing
-
-                        drafter = SpecialistRAGDrafter(openai_key)
-                        # Pass cleaned inputs to generate_rfp_template
-                        template_content = drafter.generate_rfp_template(company_objectives, template_type if template_type != "Custom" else custom_template_name)
-                        st.session_state.rfp_template_content = template_content # Store cleaned template content
-                        st.success("RFP Template generated successfully!")
-                        st.rerun() # Rerun to display the preview
-                    except Exception as e:
-                        st.error(f"Error generating RFP template: {str(e)}")
-
-        with col2:
+            if st.button("Generate RFP Template", type="primary", key="generate_rfp_template_button"):
+                openai_key_check = st.session_state.config["api_keys"]["openai_key"] or os.environ.get("OPENAI_API_KEY")
+                if not openai_key_check:
+                    st.error("OpenAI API key is not configured for template generation.")
+                else:
+                    with st.spinner("Generating RFP template..."):
+                        try:
+                            # Inputs are cleaned before passing to drafter
+                            cleaned_objectives = remove_problematic_chars(company_objectives_input)
+                            final_template_type = remove_problematic_chars(custom_template_name_input if template_type_selection == "Custom" and custom_template_name_input else template_type_selection)
+                            
+                            drafter_instance = SpecialistRAGDrafter(openai_key_check)
+                            template_content_result = drafter_instance.generate_rfp_template(cleaned_objectives, final_template_type)
+                            st.session_state.rfp_template_content = template_content_result # Result is cleaned
+                            st.success("RFP Template generated successfully!")
+                            st.rerun()
+                        except Exception as e_gen_rfp_temp:
+                            st.error(f"Error generating RFP template: {str(e_gen_rfp_temp)}")
+        
+        with col2_tab7:
             st.markdown('<div class="info-box">', unsafe_allow_html=True)
             st.markdown("### 📝 Template Creator Instructions")
             st.markdown("""
-            1. Describe your company objectives in detail
-            2. Select a template type or create a custom one
-            3. Click "Generate RFP Template"
-            4. Review and download the generated template
+            1. Describe your company's objectives for issuing this RFP.
+            2. Select a standard template type or choose 'Custom' and provide a name.
+            3. Click "Generate RFP Template".
+            4. Review and download the generated template below.
             """)
             st.markdown('</div>', unsafe_allow_html=True)
 
         if st.session_state.rfp_template_content:
             st.markdown("---")
-            st.header("RFP Template Preview")
-            # Display cleaned template content
-            st.markdown(remove_problematic_chars(st.session_state.rfp_template_content))
+            st.header("Generated RFP Template Preview")
+            st.markdown(st.session_state.rfp_template_content) # Already cleaned
 
-            # Add download button for the template
             st.markdown("---")
             st.header("Download RFP Template")
-            # Use the custom name if provided, otherwise the template type (already cleaned)
-            template_filename_base = custom_template_name.replace(' ', '_') if template_type == 'Custom' and custom_template_name else template_type.replace(' ', '_')
-            # Ensure filename is safe
-            template_name = f"{remove_problematic_chars(template_filename_base)}_{datetime.now().strftime('%Y%m%d%H%M%S')}.md"
+            # Filename base uses cleaned inputs
+            template_filename_base_dl = custom_template_name_input.replace(' ', '_') if template_type_selection == 'Custom' and custom_template_name_input else template_type_selection.replace(' ', '_')
+            safe_template_filename_base = remove_problematic_chars(template_filename_base_dl)
+            template_filename_dl = f"RFP_Template_{safe_template_filename_base}_{datetime.now().strftime('%Y%m%d%H%M%S')}.md"
+            
             st.download_button(
-                label="Download Template",
-                data=st.session_state.rfp_template_content, # Data is already cleaned
-                file_name=template_name,
+                label="Download RFP Template as Markdown",
+                data=st.session_state.rfp_template_content, # Already cleaned
+                file_name=template_filename_dl,
                 mime="text/markdown",
-                key="download_template_button"
+                key="download_rfp_template_button"
             )
-
 
 if __name__ == "__main__":
     main()
