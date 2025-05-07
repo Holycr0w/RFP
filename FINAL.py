@@ -2778,7 +2778,7 @@ input[type="radio"] {
         with col_title_2:
             # Add some vertical padding if needed to align with a larger logo
             # st.markdown("<div style='padding-top: 10px;'>", unsafe_allow_html=True) # Example padding
-            st.title("🚀 Imdad RFP Analyzer & Proposal Generator")
+            st.title(" Imdad RFP Analyzer & Proposal Generator")
             # st.markdown("</div>", unsafe_allow_html=True) # Close optional div
 
         # Add a caption below the title if the logo wasn't found but was specified
@@ -2790,7 +2790,7 @@ input[type="radio"] {
 
 
     # Main workflow tabs
-    tabs = st.tabs(["📋 Upload RFP", "📝 Proposal Template Creation", "📊 Generate Proposal", "📤 Export", "🔍 Advanced Analysis", "🔍 Vendor Proposal Evaluation", "📋 RFP Template Creator"])
+    tabs = st.tabs([" Upload RFP", " Proposal Template Creation", " Generate Proposal", " Export", " Advanced Analysis", " Vendor Proposal Evaluation", " RFP Template Creator"])
 
     # Tab 1: Upload RFP
     with tabs[0]:
