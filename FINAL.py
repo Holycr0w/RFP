@@ -93,7 +93,7 @@ def load_config():
     default_config = {
         "company_info": {
             "name": "Your Company Name",
-            "logo_path": "download (7).png",
+            "logo_path": "RFP/download (7).png",
             "default_styles": {
                 "primary_color": "#003366",
                 "secondary_color": "#669933",
